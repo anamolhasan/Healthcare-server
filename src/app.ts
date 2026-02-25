@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express'
+import { IndexRoutes } from './app/routes';
 
 
 const app: Application = express()
@@ -6,7 +7,7 @@ const app: Application = express()
 app.use(express.urlencoded({extended:true}));
 
 // Middleware to parse JSON bodies
-app.use('api/v1/')
+app.use('api/v1/', IndexRoutes)
 
 
 // Basic route
