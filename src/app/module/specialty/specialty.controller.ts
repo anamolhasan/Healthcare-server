@@ -2,10 +2,12 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../shared/catchAsync";
 import { SpecialtyService } from "./specialty.service";
 import { sendResponse } from "../../shared/sendResponse";
+import { Specialty } from "../../../generated/prisma/client";
 
 const createSpecialty = catchAsync(
     async(req:Request, res:Response) => {
         const payload = req.body;
+        // console.log(payload)
         const result = await SpecialtyService.createSpecialty(payload)
 
         sendResponse(res, {
@@ -14,6 +16,22 @@ const createSpecialty = catchAsync(
             message:'Specialty created successfully',
             data:result
         })
+    }
+)
+
+const updateSpecialty = catchAsync(
+    async (req:Request, res:Response) => {
+     const payload: Partial<Specialty> = req.body
+     const id = req.params.id
+
+     const result = await SpecialtyService.updateSpecialty(payload, id as string)
+
+     sendResponse(res,{
+        httpStatusCode:200,
+        success:true,
+        message:'Specialty update successfully',
+        data:result
+     })
     }
 )
 
@@ -28,6 +46,8 @@ const getAllSpecialties = catchAsync(
         })
     }
 )
+
+
 
 const deleteSpecialty = catchAsync(
     async (req:Request, res:Response) => {
@@ -45,5 +65,6 @@ const deleteSpecialty = catchAsync(
 export const SpecialtyController = {
     createSpecialty,
     getAllSpecialties,
-    deleteSpecialty
+    deleteSpecialty,
+    updateSpecialty
 }

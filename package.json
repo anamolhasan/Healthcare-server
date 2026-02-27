@@ -5,14 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build":"tsc",
-    "dev":"tsc watch src/server.ts",
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
     "lint": "eslint ./src/**/*",
-    "migrate":"prisma migrate dev",
-    "generate":"prisma generate",
-    "studio":"prisma studio",
-    "push":"prisma db push",
-    "pull":"prisma db pull",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "studio": "prisma studio",
+    "push": "prisma db push",
+    "pull": "prisma db pull",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -31,5 +31,11 @@
     "pg": "^8.18.0",
     "prisma": "^7.4.1",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.2",
+    "tsx": "^4.21.0",
+    "typescript-eslint": "^8.56.1"
   }
 }

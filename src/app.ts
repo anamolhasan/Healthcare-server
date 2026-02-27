@@ -4,15 +4,20 @@ import { IndexRoutes } from './app/routes';
 
 const app: Application = express()
 
+
+// Enable URL-encoded form data parsing
 app.use(express.urlencoded({extended:true}));
 
 // Middleware to parse JSON bodies
-app.use('api/v1/', IndexRoutes)
+app.use(express.json())
+
+
+app.use('/api/v1/', IndexRoutes)
 
 
 // Basic route
 app.get('/', async(req:Request, res:Response) => {
-    res.send('first route')
+    res.send('<h1>Server is running</h1>')
 })
 
 export default app;
