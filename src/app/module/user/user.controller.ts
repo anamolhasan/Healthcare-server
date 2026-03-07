@@ -29,7 +29,7 @@ const createDoctor = catchAsync(
             httpStatusCode:status.CREATED,
             success:true,
             message:'Admin registered successfully',
-            data: payload
+            data: result
         })
     }
 )
