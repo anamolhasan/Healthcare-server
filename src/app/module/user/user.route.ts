@@ -10,7 +10,7 @@ router.post(
   validateRequest(createDoctorZodSchema),
   UserController.createDoctor,
 );
-// router.post('/create-admin', UserController.createDoctor)
+router.post('/create-admin', UserController.createAdmin)
 // router.post('/create-supper-admin', UserController.createDoctor)
 
 export const UserRouters = router;

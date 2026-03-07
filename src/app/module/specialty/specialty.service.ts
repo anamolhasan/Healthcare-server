@@ -1,4 +1,6 @@
+import status from "http-status"
 import { Specialty } from "../../../generated/prisma/client"
+import AppError from "../../errorHelpers/AppError"
 import { prisma } from "../../lib/prisma"
 
 
@@ -19,7 +21,7 @@ const updateSpecialty = async (
     where:{id}
   });
   if(!specialty){
-    throw new Error('Specialty not found')
+    throw new AppError(status.NOT_FOUND,'Specialty not found')
   }
   
   const result = await prisma.specialty.update({
