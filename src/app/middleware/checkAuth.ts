@@ -15,6 +15,10 @@ export const checkAuth = (...authRoles:Role[]) => async(req:Request, res:Respons
         const sessionToken = CookieUtils.getCookie(req, 'better-auth.session_token');
 
         if(!sessionToken){
+            throw new Error('Unauthorized access! No session token provided.')
+        }
+
+        if(sessionToken){
             const sessionExists = await prisma.session.findFirst({
                 where:{
                     token:sessionToken,
@@ -56,6 +60,12 @@ export const checkAuth = (...authRoles:Role[]) => async(req:Request, res:Respons
 
                 if(authRoles.length > 0 && !authRoles.includes(user.role)){
                     throw new AppError(status.FORBIDDEN, 'Forbidden access! You do no have permission to access this resource.')
+                }
+
+                req.user = {
+                    userId: user.id,
+                    role: user.role,
+                    email: user.email,
                 }
             }
 
