@@ -13,7 +13,7 @@ export interface IUpdateDoctorPayload {
         profilePhoto?:string;
         contentNumber?:string;
         address?:string;
-        experience?:string;
+        experience?:number;
         registrationNumber?:string;
         gender?:Gender;
         appointmentFee?:number;
@@ -21,5 +21,5 @@ export interface IUpdateDoctorPayload {
         currentWorkingPlace?:string;
         designation?:string;
     },
-    specialties?:IUpdateDoctorPayload[]
+    specialties?:IUpdateDoctorSpecialtyPayload[]
 }
