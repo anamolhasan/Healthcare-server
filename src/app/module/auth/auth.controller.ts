@@ -6,6 +6,7 @@ import { sendResponse } from "../../shared/sendResponse";
 // import { envVars } from "../../config/env";
 import { tokenUtils } from "../../utils/token";
 import status from "http-status";
+import AppError from "../../errorHelpers/AppError";
 
 
 const registerPatient = catchAsync(
@@ -77,8 +78,37 @@ const getMe = catchAsync(
     }
 )
 
+const getNewToken = catchAsync(
+    async (req:Request, res:Response) => {
+        const refreshToken = req.cookies.refreshToken 
+        const betterAuthSessionToken = req.cookies['better-auth.session_token'];
+        if(!refreshToken){
+            throw new AppError(status.UNAUTHORIZED, 'Refresh token is messing');
+        }
+        const result = await AuthService.getNewToken(refreshToken, betterAuthSessionToken);
+
+        const {accessToken, refreshToken: newRefreshToken, sessionToken} = result;
+
+        tokenUtils.setAccessTokenCookie(res, accessToken);
+        tokenUtils.setRefreshTokenCookie(res, newRefreshToken);
+        tokenUtils.setBatterAuthSessionCookie(res, sessionToken);
+
+        sendResponse(res, {
+            httpStatusCode: status.OK,
+            success: true,
+            message:'New tokens generated successfully',
+            data: {
+                accessToken,
+                refreshToken:newRefreshToken,
+                sessionToken,
+            }
+        })
+    }
+)
+
 export const authController = {
     registerPatient,
     loginUser,
     getMe,
+    getNewToken,
 }
