@@ -32,7 +32,7 @@ const setAccessTokenCookie = (res:Response, token:string) => {
         sameSite:'none',
         path:'/',
         // 1 Day
-        maxAge: 60 * 60 * 60 * 24
+        maxAge: 60 * 60 * 24 * 1000,
     })
 }
 
@@ -43,7 +43,7 @@ const setRefreshTokenCookie = (res:Response, token:string) => {
         sameSite:'none',
         path:'/',
         // 7 Day
-        maxAge: 60 * 60 * 60 * 24 * 7,
+        maxAge: 60 * 60 *  24 * 1000 * 7,
     })
 }
 
@@ -54,7 +54,7 @@ const setBatterAuthSessionCookie = (res:Response, token:string) => {
         sameSite:'none',
         path:'/',
         // 1 Day
-        maxAge: 60 * 60 * 60 * 24,
+        maxAge: 60 * 60  * 24 * 1000,
     })
 }
 

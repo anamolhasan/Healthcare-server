@@ -11,5 +11,10 @@ router.post('/login', authController.loginUser)
 router.get('/me', checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.PATIENT), authController.getMe)
 
 router.post('/refresh-token', authController.getNewToken)
+router.post('/change-password', checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.PATIENT), authController.changePassword)
+router.post('/logout', checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.PATIENT), authController.logOutUser)
+
+
+
 
 export const AuthRoutes = router;
