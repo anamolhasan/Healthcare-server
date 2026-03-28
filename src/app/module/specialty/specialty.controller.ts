@@ -6,8 +6,12 @@ import { Specialty } from "../../../generated/prisma/client";
 
 const createSpecialty = catchAsync(
     async(req:Request, res:Response) => {
-        const payload = req.body;
-        // console.log(payload)
+
+        const payload = {
+            ...req.body,
+            icon:req.file?.path
+        }
+      
         const result = await SpecialtyService.createSpecialty(payload)
 
         sendResponse(res, {
