@@ -35,7 +35,7 @@ export interface IQueryParams {
     page ?: string;
     limit ?: string;
     sortBy ?: string;
-    sortOrder ?: 'asc' | 'dsc';
+    sortOrder ?: 'asc' | 'desc';
     fields ?: string;
     includes ?: string;
     [key:string] : string | undefined;
@@ -85,6 +85,6 @@ export interface IQueryResult<T>{
         page:number;
         limit:number;
         total:number;
-        totalPage:number;
+        totalPages:number;
     }
 }
