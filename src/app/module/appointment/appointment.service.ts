@@ -1,3 +1,4 @@
+import { envVars } from './../../config/env';
 import { IRequestUser } from "../../interfaces/requestUser.interface"
 import { prisma } from "../../lib/prisma"
 import { IBookApplicationPayload } from "./appointment.interface"
@@ -5,6 +6,7 @@ import { v7 as uuidv7 } from "uuid"
 import { AppointmentStatus, PaymentStatus, Role } from "../../../generated/prisma/enums"
 import AppError from "../../errorHelpers/AppError"
 import status from "http-status"
+import { stripe } from "../../config/stripe.config"
 
 
 // Pay Now Book Appointment
@@ -64,19 +66,54 @@ const bookAppointment = async (payload:IBookApplicationPayload, user:IRequestUse
 
             // TODO : Payment Integration will be here
 
-            // const transactionId = String(uuidv7());
+            const transactionId = String(uuidv7());
 
-            // const paymentData = await tx.payment.create({
-            //     data:{
-            //         appointmentId:appointmentData.id,
-            //         amount: doctorData.appointmentFee,
-            //         transactionId,
-            //     }
-            // })
+            const paymentData = await tx.payment.create({
+                data:{
+                    appointmentId:appointmentData.id,
+                    amount: doctorData.appointmentFee,
+                    transactionId,
+                }
+            })
 
-            // const session = ''
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types:['card'],
+                mode:'payment',
+                line_items:[
+                    {
+                        price_data:{
+                            currency:'bdt',
+                            product_data:{
+                                name: `Appointment with Dr. ${doctorData.name}`,
+                            },
+                            unit_amount: doctorData.appointmentFee * 100,
+                        },
+                        quantity : 1
+                    }
+                ],
+                metadata:{
+                    appointmentId : appointmentData.id,
+                    paymentId : paymentData.id,
+                },
+                success_url: `${envVars.FRONTEND_URL}/dashboard/payment/payment-success`,
+
+                // cancel_url: `${envVars.FRONTEND_URL}/dashboard/payment/payment-failed`,
+                cancel_url: `${envVars.FRONTEND_URL}/dashboard/appointments`,
+            })
+
+            return {
+                appointmentData,
+                paymentData,
+                paymentUrl: session.url,
+            }
         }
     )
+
+    return {
+        appointment: result.appointmentData,
+        payment: result.paymentData,
+        paymentUrl: result.paymentUrl,
+    }
 }
  
 const getMyAppointments = async (user: IRequestUser) => {
@@ -93,6 +130,7 @@ const getMyAppointments = async (user: IRequestUser) => {
         }
     });
 
+    // eslint-disable-next-line no-useless-assignment
     let appointments = [];
 
     if (patientData) {
@@ -328,9 +366,87 @@ const initiatePayment = async (appointmentId:string, user:IRequestUser) => {
     if(appointmentData.status === AppointmentStatus.CANCELED){
         throw new AppError(status.BAD_REQUEST, 'Appointment si canceled')
     }
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: [
+            {
+                price_data:{
+                    currency:'bdt',
+                    product_data:{
+                        name:`Appointment with Dr. ${appointmentData.doctor.name}`,
+                    },
+                    unit_amount: appointmentData.doctor.appointmentFee * 100,
+                },
+                quantity:1,
+            }
+        ],
+        metadata:{
+            appointmentId:appointmentData.id,
+            paymentId : appointmentData.payment.id,
+        },
+
+        success_url: `${envVars.FRONTEND_URL}/dashboard/payment/payment-success?appointment_id=${appointmentData.id}&payment_id=${appointmentData.payment.id}`,
+
+        // cancel_url: `${envVars.FRONTEND_URL}/dashboard/payment/payment-failed`,
+        cancel_url:`${envVars.FRONTEND_URL}/dashboard/appointments?error=payment-cancelled`,
+    })
+    return {
+        paymentUrl: session.url,
+    }
 }
 
-const cancelUnpaidAppointments = async () => {}
+const cancelUnpaidAppointments = async () => {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+    const unpaidAppointments = await prisma.appointment.findMany({
+        where:{
+            // status: AppointmentStatus.SCHEDULED,
+            createdAt:{
+                lte:thirtyMinutesAgo,
+            },
+            paymentStatus:PaymentStatus.UNPAID,
+        }
+    })
+
+    const appointmentToCancel = unpaidAppointments.map(appointment => appointment.id)
+
+    await prisma.$transaction(async (tx) => {
+        await tx.appointment.updateMany({
+            where:{
+                id:{
+                    in:appointmentToCancel,
+                }
+            },
+            data:{
+                status:AppointmentStatus.CANCELED,
+            }
+        })
+
+        await tx.payment.deleteMany({
+            where:{
+                appointmentId:{
+                    in:appointmentToCancel,
+                }
+            }
+        })
+
+        for(const unpaidAppointment of unpaidAppointments){
+            await tx.doctorSchedules.update({
+                where:{
+                    doctorId_scheduleId:{
+                        doctorId:unpaidAppointment.doctorId,
+                        scheduleId:unpaidAppointment.scheduleId,
+                    }
+                },
+                data:{
+                    isBooked:false
+                }
+            })
+        }
+    })
+}
 
 export const AppointmentService = {
     bookAppointment,
