@@ -12,7 +12,7 @@ router.post(
 );
 
 router.get(
-  "/my-doctor-schedules",
+  "/my-doctor-schedule",
   checkAuth(Role.DOCTOR),
   DoctorScheduleController.getMyDoctorSchedules,
 );

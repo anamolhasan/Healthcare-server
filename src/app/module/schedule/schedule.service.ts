@@ -102,8 +102,9 @@ const getScheduleById = async (id:string) => {
 }
 
 // refactoring - doctor's appointment or booked slot conflict check
-const updateSchedule = async (id:string, payload:IUpdateSchedulePayload) => {
-    const {startDate, endDate, startTime, endTime} = payload
+const updateSchedule = async (id: string, payload: IUpdateSchedulePayload) => {
+    const { startDate, endDate, startTime, endTime } = payload;
+    console.log(payload)
     const startDateTime = new Date(
         addMinutes(
             addHours(
@@ -112,7 +113,7 @@ const updateSchedule = async (id:string, payload:IUpdateSchedulePayload) => {
             ),
             Number(startTime.split(':')[1])
         )
-    )
+    );
 
     const endDateTime = new Date(
         addMinutes(
@@ -122,19 +123,19 @@ const updateSchedule = async (id:string, payload:IUpdateSchedulePayload) => {
             ),
             Number(endTime.split(':')[1])
         )
-    )
+    );
 
-    const updateSchedule = await prisma.schedule.update({
-        where:{
-            id:id
+    const updatedSchedule = await prisma.schedule.update({
+        where: {
+            id: id
         },
         data: {
             startDateTime: startDateTime,
             endDateTime: endDateTime
         }
-    })
+    });
 
-    return updateSchedule
+    return updatedSchedule;
 }
 
 const deleteSchedule = async (id:string) => {

@@ -20,7 +20,7 @@ const updateScheduleZodSchema = z.object({
     startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
         message:'Invalid date format'
     }).optional(),
-    endDte: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
         message: 'Invalid date format'
     }).optional(),
     startTime: z.string().refine((time) => /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time), {

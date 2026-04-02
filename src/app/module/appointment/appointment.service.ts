@@ -19,8 +19,8 @@ const bookAppointment = async (payload:IBookApplicationPayload, user:IRequestUse
 
     const doctorData = await prisma.doctor.findUniqueOrThrow({
         where:{
-            id:payload.doctorId,
-            isDeleted:false,
+            id : payload.doctorId,
+            isDeleted : false,
         }
     })
 

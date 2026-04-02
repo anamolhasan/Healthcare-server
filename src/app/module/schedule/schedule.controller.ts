@@ -54,6 +54,7 @@ const updateSchedule = catchAsync(
     async (req:Request, res:Response) => {
         const {id} = req.params;
         const payload = req.body;
+        console.log(payload)
         const updateSchedule = await ScheduleService.updateSchedule(id as string, payload);
 
         sendResponse(res, {
