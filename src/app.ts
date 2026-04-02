@@ -47,7 +47,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended:true}))
 
-cron.schedule('/25 * * * *', async () => {
+cron.schedule('*/25 * * * *', async () => {
     try {
         console.log('Running cron job to cancel unpaid appointments...');
         await AppointmentService.cancelUnpaidAppointments()

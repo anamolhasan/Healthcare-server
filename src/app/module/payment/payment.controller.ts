@@ -4,8 +4,8 @@ import { catchAsync } from "../../shared/catchAsync";
 import { envVars } from "../../config/env";
 import status from "http-status";
 import { stripe } from "../../config/stripe.config";
-import { PaymentService } from "./payment.validation";
 import { sendResponse } from "../../shared/sendResponse";
+import { PaymentService } from "./payment.service";
 
 
 
