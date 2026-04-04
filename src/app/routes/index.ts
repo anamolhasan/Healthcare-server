@@ -7,6 +7,7 @@ import { AdminRoutes } from "../module/admin/admin.route";
 import { scheduleRoutes } from "../module/schedule/schedule.route";
 import { DoctorScheduleRoutes } from "../module/doctorSchedule/doctorSchedule.route";
 import { AppointmentRouter } from "../module/appointment/appointment.route";
+import { PatientRoutes } from "../module/patient/patient.route";
 
 
 const router = Router()
@@ -14,6 +15,7 @@ const router = Router()
 router.use('/auth', AuthRoutes)
 router.use('/specialties', SpecialtyRoutes)
 router.use('/users', UserRouters)
+router.use('/patients', PatientRoutes)
 router.use('/doctors', DoctorRoutes)
 router.use('/admins', AdminRoutes)
 router.use('/schedules', scheduleRoutes)

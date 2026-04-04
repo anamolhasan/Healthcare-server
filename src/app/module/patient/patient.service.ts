@@ -1,8 +1,8 @@
-import { name } from "ejs";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
 import { IUpdatePatientHealthDataPayload, IUpdatePatientProfilePayload } from "./patient.interface";
 import { convertToDataTime } from "./patient.utils";
+import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
 
 
 
@@ -67,5 +67,43 @@ const updateMyProfile = async (user : IRequestUser, payload: IUpdatePatientProfi
                 }
             })
         }
+        if(payload.medicalReports && Array.isArray(payload.medicalReports) && payload.medicalReports.length > 0){
+            for(const report of payload.medicalReports){
+                if(report.shouldDelete && report.reportId){
+                    const deletedReport = await tx.medicalReport.delete({
+                        where:{
+                            id:report.reportId
+                        }
+                    })
+                    if(deletedReport.reportLink){
+                        await deleteFileFromCloudinary(deletedReport.reportLink);
+                    }
+                } else if(report.reportName && report.reportLink){
+                    await tx.medicalReport.create({
+                        data:{
+                            patientId:patientData.id,
+                            reportName : report.reportName,
+                            reportLink: report.reportLink,
+                        }
+                    })
+                }
+            }
+        }
     })
+
+    const result = await prisma.patient.findUnique({
+        where:{
+            id:patientData.id
+        },
+        include:{
+            user:true,
+            patientHealthData:true,
+            medicalReports:true
+        }
+    })
+    return result
+}
+
+export const PatientService = {
+    updateMyProfile,
 }
