@@ -2,6 +2,8 @@
 import Stripe from 'stripe'
 import { prisma } from '../../lib/prisma'
 import { PaymentStatus } from '../../../generated/prisma/enums';
+import { generateInvoicePdf } from './payment.utils';
+import { uploadFileToCloudinary } from '../../config/cloudinary.config';
 
 
 
@@ -34,16 +36,25 @@ const handlerStripeWebhookEvent = async (event:Stripe.Event) => {
             const appointment = await prisma.appointment.findUnique({
                 where:{
                     id:appointmentId
+                },
+                include:{
+                    patient:true,
+                    doctor:true,
+                    schedule:true,
+                    payment:true
                 }
-            })
+            });
 
             if(!appointment){
-                console.error(`Appointment with id ${appointmentId} not found`);
-                return {message: `Appointment with id ${appointmentId} not found`}
+                console.error(`Appointment with id ${appointmentId} not found. Payment may be for expired appointment.`);
+                return {message: `Appointment not found`}
             }
 
-            await prisma.$transaction(async(tx) => {
-                await tx.appointment.update({
+            let pdfBuffer: Buffer | null = null;
+
+            // Update both appointment and payment in a transaction
+            const result = await prisma.$transaction(async(tx) => {
+               const updatedAppointment = await tx.appointment.update({
                     where : {
                         id: appointmentId
                     },
@@ -52,17 +63,59 @@ const handlerStripeWebhookEvent = async (event:Stripe.Event) => {
                     }
                 })
 
-                await tx.payment.update({
+                let invoiceUrl = null;
+
+               // If payment is successful, generate and upload invoice
+               if(session.payment_status === 'paid'){
+                try {
+                    // Generate invoice PDF
+                    pdfBuffer = await generateInvoicePdf({
+                        invoiceId: appointment.payment?.id || paymentId,
+                        patientName: appointment.patient.name,
+                        patientEmail: appointment.patient.email,
+                        doctorName:appointment.doctor.name,
+                        appointmentDate: appointment.schedule.startDateTime.toString(),
+                        amount: appointment.payment?.amount || 0,
+                        transactionId: appointment.payment?.transactionId || '',
+                        paymentDate: new Date().toISOString()
+                    })
+
+                    // Upload PDF to Cloudinary
+                    const cloudinaryResponse = await uploadFileToCloudinary(
+                        pdfBuffer,
+                        `ph-healthcare/invoices/invoice-${paymentId}-${Date.now()}.pdf`
+                    )
+
+                    invoiceUrl = cloudinaryResponse?.secure_url;
+
+                    console.log(`Invoice PDF generated and uploaded for payment ${paymentId}`);
+                } catch (pdfError) {
+                    console.error('Error generating/uploading invoice PDF:', pdfError);
+                    // Continue with payment update event if PDF generation fails
+                }
+               }
+                const updatedPayment = await tx.payment.update({
                     where:{
                         id: paymentId
                     },
                     data:{
-                        stripeEventId: event.id,
+                        stripeEventId: event.id, // Store event ID fro idempotency
                         status : session.payment_status === 'paid' ? PaymentStatus.PAID : PaymentStatus.UNPAID,
-                        paymentGatewayData: session as any
+                        paymentGatewayData: JSON.parse(JSON.stringify(session)),
+                        invoiceUrl: invoiceUrl, // store invoice URL
                     }
                 })
+                return {updatedAppointment, updatedPayment, invoiceUrl};
             })
+
+            // send invoice email to patient (outside transaction to avoid blocking payment update)
+            if(session.payment_status === 'paid' && result.invoiceUrl){
+                try {
+                    await
+                } catch (error) {
+                    
+                }
+            }
 
             console.log(`Processed checkout.session.completed for appointment ${appointmentId} and payment ${paymentId}`);
             break;

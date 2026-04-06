@@ -1,6 +1,6 @@
 model Prescription {
     id           String   @id @default(uuid(7))
-    followUpdate DateTime
+    followUpDate DateTime
     instructions String   @db.Text
     pdfUrl String?
     createdAt    DateTime @default(now())
