@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma'
 import { PaymentStatus } from '../../../generated/prisma/enums';
 import { generateInvoicePdf } from './payment.utils';
 import { uploadFileToCloudinary } from '../../config/cloudinary.config';
+import { sendEmail } from '../../utils/email';
 
 
 
@@ -111,13 +112,35 @@ const handlerStripeWebhookEvent = async (event:Stripe.Event) => {
             // send invoice email to patient (outside transaction to avoid blocking payment update)
             if(session.payment_status === 'paid' && result.invoiceUrl){
                 try {
-                    await
-                } catch (error) {
-                    
+                    await sendEmail({
+                        to: appointment.patient.email,
+                        subject: `Payment Confirmation & Invoice - Appointment with ${appointment.doctor.name}`,
+                        templateName: 'Invoice',
+                        templateData:{
+                            patientName: appointment.patient.name,
+                            invoiceId : appointment.payment?.id || paymentId,
+                            transactionId: appointment.payment?.transactionId || '',
+                            paymentDate: new Date().toLocaleDateString(),
+                            doctorName: appointment.doctor.name,
+                            appointmentDate: new Date(appointment.schedule.startDateTime).toLocaleDateString(),
+                            amount: appointment.payment?.amount || 0,
+                            invoiceUrl: result.invoiceUrl
+                        },
+                        attachments:[
+                            {
+                                filename: `Invoice-${paymentId}.pdf`,
+                                content: pdfBuffer || Buffer.from(""), // Attach PDF if generated, else empty buffer
+                                contentType: 'application/pdf'
+                            }
+                        ]
+                    })
+                    console.log(`Invoice email sent to ${appointment.patient.email}`)
+                } catch (emailError) {
+                    console.error('Error sending invoice email :', emailError)
                 }
             }
 
-            console.log(`Processed checkout.session.completed for appointment ${appointmentId} and payment ${paymentId}`);
+            console.log(`Payment ${session.payment_status} for appointment ${appointmentId}`);
             break;
         }
         case 'checkout.session.expired' : {
