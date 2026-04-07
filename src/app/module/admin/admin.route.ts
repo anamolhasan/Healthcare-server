@@ -1,15 +1,43 @@
 import { Router } from "express";
 import { AdminController } from "./admin.controller";
-
+import { checkAuth } from "../../middleware/checkAuth";
+import { Role } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-router.get('/', AdminController.getAllAdmins)
-router.get('/:id', AdminController.getAdminById)
+router.get(
+  "/",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  AdminController.getAllAdmins,
+);
+router.get(
+  "/:id",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  AdminController.getAdminById,
+);
 
-router.patch('/:id', AdminController.updateAdmin)
+router.patch(
+    "/:id", 
+    checkAuth(Role.SUPER_ADMIN), 
+    AdminController.updateAdmin
+);
 
-router.delete('/:id', AdminController.deleteAdmin)
+router.delete(
+    "/:id", 
+    checkAuth(Role.SUPER_ADMIN), 
+    AdminController.deleteAdmin
+);
 
 
-export const AdminRoutes = router
+router.patch(
+    '/change-user-status',
+    checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
+    AdminController.changeUserStatus
+)
+router.patch(
+    '/change-user-role',
+    checkAuth(Role.SUPER_ADMIN),
+    AdminController.changeUserRole
+)
+
+export const AdminRoutes = router;
