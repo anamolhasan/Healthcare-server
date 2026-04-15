@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
 import AppError from "../errorHelpers/AppError";
 import status from "http-status";
+import path from 'path'
 
-dotenv.config();
+// dotenv.config();
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 interface EnvConfig {
   NODE_ENV: string;
@@ -41,6 +43,8 @@ interface EnvConfig {
 }
 
 const loadEnvVariables = (): EnvConfig => {
+  const env = process.env;
+
   const requireEnvVariable = [
     "NODE_ENV",
     "PORT",
@@ -72,7 +76,7 @@ const loadEnvVariables = (): EnvConfig => {
   ];
 
   requireEnvVariable.forEach((variable) => {
-    if (!process.env[variable]) {
+    if (!env[variable]) {
       throw new AppError( 
         status.INTERNAL_SERVER_ERROR,
         `Environment variable ${variable} is required but not set in .env file.`,
@@ -84,39 +88,39 @@ const loadEnvVariables = (): EnvConfig => {
   });
 
   return {
-    NODE_ENV: process.env.NODE_ENV as string,
-    PORT: process.env.PORT as string,
-    DATABASE_URL: process.env.DATABASE_URL as string,
-    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL as string,
-    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET as string,
-    ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET as string,
-    REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET as string,
-    ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN as string,
-    REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN as string,
-    BETTER_AUTH_SESSION_TOKEN_EXPIRES_IN: process.env.BETTER_AUTH_SESSION_TOKEN_EXPIRES_IN as string,
-    BETTER_AUTH_SESSION_TOKEN_UPDATE_AGE: process.env.BETTER_AUTH_SESSION_TOKEN_UPDATE_AGE as string,
+    NODE_ENV: env.NODE_ENV as string,
+    PORT: env.PORT as string,
+    DATABASE_URL: env.DATABASE_URL as string,
+    BETTER_AUTH_URL: env.BETTER_AUTH_URL as string,
+    BETTER_AUTH_SECRET: env.BETTER_AUTH_SECRET as string,
+    ACCESS_TOKEN_SECRET: env.ACCESS_TOKEN_SECRET as string,
+    REFRESH_TOKEN_SECRET: env.REFRESH_TOKEN_SECRET as string,
+    ACCESS_TOKEN_EXPIRES_IN: env.ACCESS_TOKEN_EXPIRES_IN as string,
+    REFRESH_TOKEN_EXPIRES_IN: env.REFRESH_TOKEN_EXPIRES_IN as string,
+    BETTER_AUTH_SESSION_TOKEN_EXPIRES_IN: env.BETTER_AUTH_SESSION_TOKEN_EXPIRES_IN as string,
+    BETTER_AUTH_SESSION_TOKEN_UPDATE_AGE: env.BETTER_AUTH_SESSION_TOKEN_UPDATE_AGE as string,
     EMAIL_SENDER:{
-      SMTP_USER:process.env.EMAIL_SENDER_SMTP_USER as string,
-      SMTP_PASS:process.env.EMAIL_SENDER_SMTP_PASS as string,
-      SMTP_HOST:process.env.EMAIL_SENDER_SMTP_HOST as string,
-      SMTP_PORT:process.env.EMAIL_SENDER_SMTP_PORT as string,
-      SMTP_FROM:process.env.EMAIL_SENDER_SMTP_FROM as string,
+      SMTP_USER:env.EMAIL_SENDER_SMTP_USER as string,
+      SMTP_PASS:env.EMAIL_SENDER_SMTP_PASS as string,
+      SMTP_HOST:env.EMAIL_SENDER_SMTP_HOST as string,
+      SMTP_PORT:env.EMAIL_SENDER_SMTP_PORT as string,
+      SMTP_FROM:env.EMAIL_SENDER_SMTP_FROM as string,
     },
-    GOOGLE_CLIENT_ID:process.env.GOOGLE_CLIENT_ID as string,
-    GOOGLE_CLIENT_SECRET:process.env.GOOGLE_CLIENT_SECRET as string,
-    GOOGLE_CALLBACK_URL:process.env.GOOGLE_CALLBACK_URL as string,
-    FRONTEND_URL:process.env.FRONTEND_URL as string,
+    GOOGLE_CLIENT_ID:env.GOOGLE_CLIENT_ID as string,
+    GOOGLE_CLIENT_SECRET:env.GOOGLE_CLIENT_SECRET as string,
+    GOOGLE_CALLBACK_URL:env.GOOGLE_CALLBACK_URL as string,
+    FRONTEND_URL:env.FRONTEND_URL as string,
     CLOUDINARY:{
-      CLOUDINARY_CLOUD_NAME:process.env.CLOUDINARY_CLOUD_NAME as string,
-      CLOUDINARY_API_KEY:process.env.CLOUDINARY_API_KEY as string,
-      CLOUDINARY_API_SECRET:process.env.CLOUDINARY_API_SECRET as string,
+      CLOUDINARY_CLOUD_NAME:env.CLOUDINARY_CLOUD_NAME as string,
+      CLOUDINARY_API_KEY:env.CLOUDINARY_API_KEY as string,
+      CLOUDINARY_API_SECRET:env.CLOUDINARY_API_SECRET as string,
     },
     STRIPE:{
-      STRIPE_SECRET_KEY:process.env.STRIPE_SECRET_KEY as string,
-      STRIPE_WEBHOOK_SECRET:process.env.STRIPE_WEBHOOK_SECRET as string
+      STRIPE_SECRET_KEY:env.STRIPE_SECRET_KEY as string,
+      STRIPE_WEBHOOK_SECRET:env.STRIPE_WEBHOOK_SECRET as string
     },
-    SUPER_ADMIN_EMAIL:process.env.SUPER_ADMIN_EMAIL as string,
-    SUPER_ADMIN_PASSWORD:process.env.SUPER_ADMIN_PASSWORD as string,
+    SUPER_ADMIN_EMAIL:env.SUPER_ADMIN_EMAIL as string,
+    SUPER_ADMIN_PASSWORD:env.SUPER_ADMIN_PASSWORD as string,
   };
 };
 
