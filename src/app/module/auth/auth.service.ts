@@ -126,7 +126,7 @@ const loginUser = async (payload:ILoginUserPayload) => {
         userId: data.user.id,
         role: data.user.role,
         name: data.user.name,
-        email: data.user.name,
+        email: data.user.email,
         status: data.user.status,
         isDeleted: data.user.isDeleted,
         emailVerified: data.user.emailVerified
