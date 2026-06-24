@@ -84,6 +84,7 @@ const getMe = catchAsync(
 
 const getNewToken = catchAsync(
     async (req:Request, res:Response) => {
+        // console.log(req.cookies)
         const refreshToken = req.cookies.refreshToken 
         const betterAuthSessionToken = req.cookies['better-auth.session_token'];
         if(!refreshToken){
