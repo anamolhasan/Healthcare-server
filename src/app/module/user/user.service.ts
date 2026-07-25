@@ -15,7 +15,7 @@ const createDoctor = async (payload:ICreateDoctorPayload) => {
         const specialty = await prisma.specialty.findUnique({
             where:{
                 id:specialtyId
-            }
+            } 
         })
         if(!specialty){
             throw new Error(`Specialty with id ${specialtyId} not found`)

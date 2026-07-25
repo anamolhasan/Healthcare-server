@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "../../lib/auth";
 import { UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
@@ -20,16 +21,24 @@ interface IRegisterPatientPayload {
 const registerPatient = async (payload:IRegisterPatientPayload) => {
     const {name, email, password} = payload
 
-    const data = await auth.api.signUpEmail({
-        body:{
-            name,
-            email,
-            password,
-            // default value
-            // needPasswordChange:false,
-            // role:Role.PATIENT
+    let data;
+
+        try {
+            data = await auth.api.signUpEmail({
+                body: {
+                        name,
+                        email,
+                        password,
+                    },
+        })
+        
+        } catch (error: any) {
+        throw new AppError(
+            error.statusCode || status.BAD_REQUEST,
+            error.body?.message || error.message || "Registration failed"
+        );
         }
-    })
+
 
     if(!data.user){
           // throw new Error("Failed to register patient");
