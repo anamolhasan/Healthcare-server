@@ -12,6 +12,8 @@ export const checkAuth =
   (...authRoles: Role[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log('Headers Cookie', req.headers.cookie)
+      console.log('Parsed Cookies:', req.cookies)
       // session token verification
       const sessionToken = CookieUtils.getCookie(
         req,
@@ -19,7 +21,7 @@ export const checkAuth =
       );  
 
       if (!sessionToken) {
-        throw new Error("Unauthorized access! No session token provided.");
+        throw new AppError(status.UNAUTHORIZED, "Unauthorized access! No session token provided.");
       }
 
       if (sessionToken) {
